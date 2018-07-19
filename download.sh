@@ -1,3 +1,5 @@
+#!/bin/sh
+
 mkdir -p dataset/GloVe
 curl -Lo dataset/GloVe/glove.840B.300d.zip http://nlp.stanford.edu/data/glove.840B.300d.zip
 mkdir -p dataset/fastText
