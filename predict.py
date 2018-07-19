@@ -2,16 +2,19 @@ from typing import List
 import json
 import torch
 import numpy as np
-import spacy
 from allennlp.models.archival import load_archive
 from allennlp.predictors import BidafPredictor, Predictor
 from allennlp.common.checks import check_for_gpu
 from allennlp.commands.elmo import ElmoEmbedder
 from allennlp.data.tokenizers import WordTokenizer
+from similarity import get_embedder
 
 PREDICT_MODEL_NAME = "model.tar.gz"
-nlp = spacy.load('en_core_web_sm')
-#elmo_embedder = ElmoEmbedder()
+# chances are "fasttext", "stanford", "spacy"
+# elmo will be added
+SENTENCE_EMBEDDER_NAME = "fasttext"
+
+sentence_embedder = get_embedder('spacy')
 
 def GetPredictor(archive: str) -> Predictor:
     check_for_gpu(1)
@@ -47,11 +50,10 @@ def predict_batch_json(batch_json_data: List[dict]):
         for option_idx, option in json_data["options"]:
             sentences_idx.append(option_idx)
             sentences.append(option)
-            
-        #elmo = GetElmo(sentences = sentences)
-        tensors = {sentence_idx: nlp(sentence) for sentence_idx, sentence in zip(sentences_idx, sentences)}
+        
+        tensors = {sentence_idx: ndarray for sentence_idx, ndarray in zip(sentences_idx, sentence_embedder.encode(sentences) )}
 
-        distances = {sentence_idx: tensors['predict'].similarity(tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
+        distances = {sentence_idx: sentence_embedder.similarity(tensors['predict'] ,tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
 
         return {"predict": result, "cosine": distances}
         
@@ -69,10 +71,10 @@ def predict_json(json_data: dict):
         sentences_idx.append(option_idx)
         sentences.append(option)
     
-    #elmo = GetElmo(sentences = sentences)
-    tensors = {sentence_idx: nlp(sentence) for sentence_idx, sentence in zip(sentences_idx, sentences)}
-    
-    distances = {sentence_idx: tensors['predict'].similarity(tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
+        
+        tensors = {sentence_idx: ndarray for sentence_idx, ndarray in zip(sentences_idx, sentence_embedder.encode(sentences) )}
+
+        distances = {sentence_idx: sentence_embedder.similarity(tensors['predict'] ,tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
     
     return {"predict": result, "cosine": distances}
     
