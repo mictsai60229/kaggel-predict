@@ -57,8 +57,6 @@ def predict_batch_json(batch_json_data: List[dict]):
         tensors = {sentence_idx: ndarray for sentence_idx, ndarray in zip(sentences_idx, sentence_embedder.encode(sentences) )}
 
         distances = {sentence_idx: sentence_embedder.similarity(tensors['predict'] ,tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
-
-        return {"predict": result, "cosine": distances}
         
         batch_result.append({"predict": result, "cosine": distances})
         
