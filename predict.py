@@ -1,20 +1,23 @@
 from typing import List
 import json
 import torch
+import os
 import numpy as np
 from allennlp.models.archival import load_archive
 from allennlp.predictors import BidafPredictor, Predictor
 from allennlp.common.checks import check_for_gpu
 from allennlp.commands.elmo import ElmoEmbedder
 from allennlp.data.tokenizers import WordTokenizer
-from similarity import get_embedder
+from .similarity import get_embedder
 
-PREDICT_MODEL_NAME = "model.tar.gz"
+
+FILE_PATH = os.path.dirname(__file__)
+PREDICT_MODEL_NAME = os.path.join(FILE_PATH, "model.tar.gz")
 # chances are "fasttext", "stanford", "spacy"
 # elmo will be added
 SENTENCE_EMBEDDER_NAME = "fasttext"
 
-sentence_embedder = get_embedder('spacy')
+sentence_embedder = get_embedder(SENTENCE_EMBEDDER_NAME)
 
 def GetPredictor(archive: str) -> Predictor:
     check_for_gpu(1)
@@ -72,9 +75,9 @@ def predict_json(json_data: dict):
         sentences.append(option)
     
         
-        tensors = {sentence_idx: ndarray for sentence_idx, ndarray in zip(sentences_idx, sentence_embedder.encode(sentences) )}
+    tensors = {sentence_idx: ndarray for sentence_idx, ndarray in zip(sentences_idx, sentence_embedder.encode(sentences) )}
 
-        distances = {sentence_idx: sentence_embedder.similarity(tensors['predict'] ,tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
+    distances = {sentence_idx: sentence_embedder.similarity(tensors['predict'] ,tensors[sentence_idx]) for sentence_idx in sentences_idx[1:]}
     
     return {"predict": result, "cosine": distances}
     
@@ -82,14 +85,3 @@ def predict_json(json_data: dict):
 def predict(question: str, passage: str, options: List[str]):
     return predict_json({'question': question, "passage": passage, "options": options})
     
-
-
-if __name__ == "__main__":
-    json_data = [json.loads(line) for line in open("mc-examples.jsonl") if line.strip()]
-    print(predict_batch_json(json_data))
-    
-    
-    json_data = json.load(open("mc-examples.jsonl"))
-    print(predict_json(json_data))
-    
-    predict(json_data['question'] ,json_data["passage"], json_data["options"])

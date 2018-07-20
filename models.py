@@ -30,9 +30,11 @@ class InferSent(nn.Module):
         self.pool_type = config['pool_type']
         self.dpout_model = config['dpout_model']
         self.version = 1 if 'version' not in config else config['version']
-
+        
         self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
                                 bidirectional=True, dropout=self.dpout_model)
+        
+            
 
         assert self.version in [1, 2]
         if self.version == 1:
@@ -48,7 +50,7 @@ class InferSent(nn.Module):
 
     def is_cuda(self):
         # either all weights are on cpu or they are on gpu
-        return 'cuda' in str(type(self.enc_lstm.bias_hh_l0.data))
+        return self.enc_lstm.bias_hh_l0.data.is_cuda
 
     def forward(self, sent_tuple):
         # sent_len: [max_len, ..., min_len] (bsize)
@@ -222,6 +224,7 @@ class InferSent(nn.Module):
                         sentences[stidx:stidx + bsize]), volatile=True)
             if self.is_cuda():
                 batch = batch.cuda()
+                print(type(batch))
             batch = self.forward(
                 (batch, lengths[stidx:stidx + bsize])).data.cpu().numpy()
             embeddings.append(batch)
