@@ -10,7 +10,7 @@ FASTTEXT_W2V_PATH = os.path.join(FILE_PATH, 'dataset/fastText/crawl-300d-2M.vec'
 STANFORD_MODEL_PATH = os.path.join(FILE_PATH, 'encoder/infersent1.pkl')
 STANFORD_W2V_PATH = os.path.join(FILE_PATH, 'dataset/GloVe/glove.840B.300d.txt')
 def cosine(u, v):
-    return np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v))
+    return float(np.dot(u, v) / (np.linalg.norm(u) * np.linalg.norm(v)))
 
 def get_embedder(embedder_type="fasttext"):
     embedder_name = {
