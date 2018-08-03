@@ -44,7 +44,7 @@ def torch_length(ndarrayA, ndarrayB):
 
 def predict_batch_json(batch_json_data: List[dict]):
     global predictor
-    results = [predictor.predict_json(json_data)['best_span_str'] for json_data in batch_json_data]
+    results = [json_data['best_span_str'] for json_data in predictor.predict_batch_json(batch_json_data)]
     
     batch_result = []
     for result, json_data in zip(results, batch_json_data):
