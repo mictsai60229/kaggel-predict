@@ -42,9 +42,12 @@ def torch_length(ndarrayA, ndarrayB):
     return np.linalg.norm(ndarrayA-ndarrayB)
     #return cosine(ndarrayA, ndarrayB)
 
-def predict_batch_json(batch_json_data: List[dict]):
+def predict_batch_json(batch_json_data: List[dict], batch_size: int = 4):
     global predictor
-    results = [json_data['best_span_str'] for json_data in predictor.predict_batch_json(batch_json_data)]
+    results = [json_data['best_span_str']
+              for idx in range(0, len(batch_json_data) ,batch_size)
+              for json_data in predictor.predict_batch_json(batch_json_data[idx: idx+batch_size])]
+    #results = [json_data['best_span_str'] for json_data in predictor.predict_batch_json(batch_json_data)]
     
     batch_result = []
     for result, json_data in zip(results, batch_json_data):
